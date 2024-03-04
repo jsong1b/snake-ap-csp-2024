@@ -1,2 +1,3 @@
 # ncurses-snake
-Snake written with Ncurses in C. My Create Performance Task for the 2024 AP Computer Science Principles AP Exam.
+
+Snake written in Python using the curses module. My Create Performance Task for the 2024 AP Computer Science Principles.
