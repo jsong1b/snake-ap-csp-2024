@@ -3,6 +3,9 @@
 import curses
 import sys
 
+##################
+# INITIALIZATION #
+##################
 
 def main(argv):
     if not len(argv) == 2:
@@ -29,10 +32,10 @@ def main(argv):
 
 def usage():
     print("USAGE: ./snake.py [HEIGHT] [WIDTH]")
-    print("where [HEIGHT] and [WIDTH] are integers between 10 and 30")
+    print("where [HEIGHT] and [WIDTH] are integers between 10 and 50")
 
 def createBoard(width, height):
-    if not 10 <= width <= 30 or not 10 <= height <= 30:
+    if not 10 <= width <= 50 or not 10 <= height <= 50:
         return False
 
     board = []
@@ -54,17 +57,24 @@ def createBoard(width, height):
     return board
 
 
+##################
+# GAME FUNCTIONS #
+##################
+
+
 def snake(stdscr, board):
     height = len(board)
     width = len(board[0])
 
     curses.start_color()
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
 
     curses.curs_set(False)
 
-    snake = [(height // 2, width // 4), (height // 2, (width // 4) - 1)]
+    snake = []
+    for i in range(3):
+        snake.append((height // 2, (width // 4) - i))
     fruit = ((height // 2), width - (width // 4))
 
     drawScreen(board, snake, fruit, stdscr)
@@ -80,14 +90,18 @@ def drawScreen(board, snake, fruit, stdscr):
             stdscr.addstr(i, j, board[i][j])
 
     for i, pos in enumerate(snake):
-        stdscr.addstr(pos[0], pos[1], "O")
+        stdscr.addstr(pos[0], pos[1], "O", curses.color_pair(1) | curses.A_DIM)
         if i == 0:
-            stdscr.addstr(pos[0], pos[1], "O", curses.color_pair(1))
+            stdscr.addstr(pos[0], pos[1], "O", curses.color_pair(1) | curses.A_BOLD)
 
-    stdscr.addstr(fruit[0], fruit[1], "X")
+    stdscr.addstr(fruit[0], fruit[1], "X", curses.color_pair(2) | curses.A_BOLD)
 
     stdscr.refresh()
 
+
+###########
+# STARTUP #
+###########
 
 if __name__ == "__main__":
     main(sys.argv[1:])
