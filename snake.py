@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import curses
+import copy
 import sys
+import time
+import random
 
 ##################
 # INITIALIZATION #
@@ -47,7 +50,7 @@ def createBoard(width, height):
             elif j == 0 or j == width + 1:
                 board[i].append("|")
             else:
-                board[i].append("0")
+                board[i].append(" ")
 
     board[0][0] = "+"
     board[height + 1][0] = "+"
@@ -67,26 +70,56 @@ def snake(stdscr, board):
     width = len(board[0])
 
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
 
     curses.curs_set(False)
 
-    snake = []
-    for i in range(3):
-        snake.append((height // 2, (width // 4) - i))
-    fruit = ((height // 2), width - (width // 4))
+    stdscr.clear()
+    stdscr.refresh()
 
-    drawScreen(board, snake, fruit, stdscr)
+    snake = []
+    direction = "right"
+    for i in range(3):
+        snake.append([height // 2, (width // 4) - i])
+    fruit = [(height // 2), width - (width // 4)]
+
+    drawScreen(board, snake, fruit, 0, stdscr, direction)
+
+    stdscr.addstr(height + 2, 0, "Press any key to start")
+    stdscr.refresh()
+    stdscr.getch()
+    stdscr.addstr(height + 2, 0, "")
+
+    score = 0
+    drawScreen(board, snake, fruit, score, stdscr, direction)
+
+    while True:
+        direction = getDirection(direction, stdscr)
+        time.sleep(0.15)
+
+        direction = getDirection(direction, stdscr)
+        drawScreen(board, snake, fruit, score, stdscr, direction)
+        if updateGame(board, snake, fruit, score, direction) == False:
+            break
+
+        if snake[0][0] == 0 or snake[0][1] == 0 or snake[0][0] == len(board) - 1 or snake[0][1] == len(board[0]) - 1:
+            break
+
+    stdscr.nodelay(0)
+    stdscr.addstr(height + 2, 0, "GAME OVER - SCORE: " + str(score), curses.A_BOLD | curses.A_UNDERLINE)
+    stdscr.addstr(height + 3, 0, "Press any key to exit")
+    stdscr.refresh()
+    time.sleep(0.25)
 
     stdscr.getstr()
 
 
-def drawScreen(board, snake, fruit, stdscr):
+def drawScreen(board, snake, fruit, score, stdscr, direction):
+    stdscr.clear()
+
     for i, _ in enumerate(board):
         for j, _ in enumerate(board[i]):
-            if board[i][j] == "0":
-                continue
             stdscr.addstr(i, j, board[i][j])
 
     for i, pos in enumerate(snake):
@@ -96,12 +129,74 @@ def drawScreen(board, snake, fruit, stdscr):
 
     stdscr.addstr(fruit[0], fruit[1], "X", curses.color_pair(2) | curses.A_BOLD)
 
+    stdscr.addstr(len(board) + 2, 0, "SCORE: " + str(score))
+
     stdscr.refresh()
+
+
+def updateGame(board, snake, fruit, score, direction):
+    oldSnake = copy.deepcopy(snake)
+
+    if direction == "right":
+        snake[0][1] += 1
+    elif direction == "left":
+        snake[0][1] -= 1
+    elif direction == "up":
+        snake[0][0] -= 1
+    elif direction == "down":
+        snake[0][0] += 1
+
+    for i in range(1, len(snake)):
+        snake[i] = oldSnake[i - 1]
+
+    if snake[0] == fruit:
+        score += 1
+        snake.append(oldSnake[-1])
+        fruit[:] = list(newFruit(snake, fruit, board))
+
+    for i in range(1, len(snake)):
+        if snake[0] == snake[i]:
+            return False
+
+    return True
+
+
+def getDirection(direction, stdscr):
+    stdscr.nodelay(1)
+    key = stdscr.getch()
+
+    if key == curses.KEY_RIGHT and not direction == "left":
+        return "right"
+    elif key == curses.KEY_LEFT and not direction == "right":
+        return "left"
+    elif key == curses.KEY_UP and not direction == "down":
+        return "up"
+    elif key == curses.KEY_DOWN and not direction == "up":
+        return "down"
+    else:
+        return direction
+
+def newFruit(snake, fruit, board):
+    height = len(board)
+    width = len(board[0])
+    newFruitY = random.randrange(1, height - 1)
+    newFruitX = random.randrange(1, width - 1)
+    newFruit = [newFruitY, newFruitX]
+
+    if newFruit == fruit:
+        return newFruit(snake, fruit, board)
+
+    for i in snake:
+        if newFruit == i:
+            return newFruit(snake, fruit, board)
+
+    return newFruit
 
 
 ###########
 # STARTUP #
 ###########
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
