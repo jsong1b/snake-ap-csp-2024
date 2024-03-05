@@ -46,7 +46,7 @@ def createBoard(width, height):
         board.append([])
         for j in range(width + 2):
             if i == 0 or i == height + 1:
-                board[i].append("=")
+                board[i].append("-")
             elif j == 0 or j == width + 1:
                 board[i].append("|")
             else:
@@ -96,7 +96,7 @@ def snake(stdscr, board):
 
     while True:
         direction = getDirection(direction, stdscr)
-        time.sleep(0.15)
+        time.sleep(0.1)
 
         direction = getDirection(direction, stdscr)
         drawScreen(board, snake, fruit, score, stdscr, direction)
@@ -112,7 +112,7 @@ def snake(stdscr, board):
     stdscr.refresh()
     time.sleep(0.25)
 
-    stdscr.getstr()
+    stdscr.getch()
 
 
 def drawScreen(board, snake, fruit, score, stdscr, direction):
@@ -123,11 +123,11 @@ def drawScreen(board, snake, fruit, score, stdscr, direction):
             stdscr.addstr(i, j, board[i][j])
 
     for i, pos in enumerate(snake):
-        stdscr.addstr(pos[0], pos[1], "O", curses.color_pair(1) | curses.A_DIM)
+        stdscr.addstr(pos[0], pos[1], " ", curses.color_pair(1) | curses.A_DIM)
         if i == 0:
-            stdscr.addstr(pos[0], pos[1], "O", curses.color_pair(1) | curses.A_BOLD)
+            stdscr.addstr(pos[0], pos[1], "X", curses.color_pair(1) | curses.A_BOLD)
 
-    stdscr.addstr(fruit[0], fruit[1], "X", curses.color_pair(2) | curses.A_BOLD)
+    stdscr.addstr(fruit[0], fruit[1], " ", curses.color_pair(2) | curses.A_BOLD)
 
     stdscr.addstr(len(board) + 2, 0, "SCORE: " + str(score))
 
@@ -181,16 +181,15 @@ def newFruit(snake, fruit, board):
     width = len(board[0])
     newFruitY = random.randrange(1, height - 1)
     newFruitX = random.randrange(1, width - 1)
-    newFruit = [newFruitY, newFruitX]
 
-    if newFruit == fruit:
+    if [newFruitY, newFruitX] == fruit:
         return newFruit(snake, fruit, board)
 
     for i in snake:
-        if newFruit == i:
+        if [newFruitY, newFruitX] == i:
             return newFruit(snake, fruit, board)
 
-    return newFruit
+    return [newFruitY, newFruitX]
 
 
 ###########
