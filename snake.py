@@ -27,7 +27,7 @@ def main(argv):
         exit(2)
 
     board = createBoard(width, height)
-    if board == False:
+    if board == None:
         usage()
         exit(3)
 
@@ -46,7 +46,7 @@ def usage():
 
 def createBoard(width, height):
     if width < 10 or height < 10:
-        return False
+        return None
 
     board = []
     for i in range(height + 2):
@@ -91,10 +91,12 @@ def snake(stdscr, board):
     stdscr.clear()
     stdscr.refresh()
 
-    snake = []
     direction = "right"
+
+    snake = []
     for i in range(3):
         snake.append([height // 2, (width // 4) - i])
+
     fruit = [(height // 2), width - (width // 4)]
 
     drawScreen(board, snake, fruit, stdscr)
